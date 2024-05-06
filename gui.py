@@ -27,7 +27,7 @@ def select_upload_folder(window):
     input_path = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Please select a directory',)
 
 def remove_blemish():
-    subprocess.run(['python', 'blemish.py', input_path])
+    subprocess.run(['python', 'components/blemish_removal.py', input_path])
 
 def color_correction():
     pass
