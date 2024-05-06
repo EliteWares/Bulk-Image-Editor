@@ -16,5 +16,8 @@ def overlay(base_img,overlay_img):
             alpha = overlay_img_resized[y, x, 3] / 255.0  # Alpha channel
             base_img_copy[y, x] = alpha * overlay_img_resized[y, x, 0:3] + (1 - alpha) * base_img_copy[y, x]
 
+    cv2.imshow("Overlay Image", base_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     return base_img_copy      
     
