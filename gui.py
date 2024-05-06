@@ -10,6 +10,7 @@ from pathlib import Path
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, filedialog
 import subprocess
 import os
+import components.frame_manager as fm
 input_path = ""
 
         
@@ -33,7 +34,9 @@ def color_correction():
     pass
 
 def framing():
-    pass
+    currdir = os.getcwd()
+    overlay = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Select Frame Image',)
+    fm.overlay(input_path,overlay)
 
 def sizing():
     pass
@@ -69,6 +72,7 @@ image_1 = canvas.create_image(
     398.0,
     image=image_image_1
 )
+
 
 button_image_1 = PhotoImage(
     file=relative_to_assets("button_1.png"))
@@ -149,5 +153,6 @@ button_5.place(
     width=236.0,
     height=61.0
 )
+
 window.resizable(False, False)
 window.mainloop()

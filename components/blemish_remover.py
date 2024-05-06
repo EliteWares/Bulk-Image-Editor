@@ -185,4 +185,4 @@ if __name__ == "__main__":
 		# Info on why "& 0xFF" is included: 
 		# https://stackoverflow.com/questions/35372700/whats-0xff-for-in-cv2-waitkey1
 
-	cv2.destroyWindow()
+	cv2.destroyWindow(window_name)
