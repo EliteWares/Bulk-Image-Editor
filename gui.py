@@ -7,7 +7,8 @@ from pathlib import Path
 
 # from tkinter import *
 # Explicit imports to satisfy Flake8
-from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, filedialog
+from tkinter import Tk, Canvas, Button, PhotoImage, filedialog
+from PIL import Image, ImageTk
 import subprocess
 import os
 import components.frame_manager as fm
@@ -28,15 +29,17 @@ def select_upload_folder(window):
     input_path = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Please select a directory',)
 
 def remove_blemish():
-    subprocess.run(['python', 'components/blemish_removal.py', input_path])
+    subprocess.run(['python', 'components/blemish_remover.py', input_path])
 
 def color_correction():
     pass
 
-def framing():
+def framing(canvas,window):
     currdir = os.getcwd()
     overlay = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Select Frame Image',)
-    fm.overlay(input_path,overlay)
+    img = fm.overlay(input_path,overlay)
+    
+    print("Framed")
 
 def sizing():
     pass
@@ -64,7 +67,7 @@ canvas.create_text(
     fill="#A364FF",
     font=("Inter", 36 * -1)
 )
-
+'''
 image_image_1 = PhotoImage(
     file=relative_to_assets("image_1.png"))
 image_1 = canvas.create_image(
@@ -72,7 +75,7 @@ image_1 = canvas.create_image(
     398.0,
     image=image_image_1
 )
-
+'''
 
 button_image_1 = PhotoImage(
     file=relative_to_assets("button_1.png"))
@@ -96,7 +99,7 @@ button_2 = Button(
     image=button_image_2,
     borderwidth=0,
     highlightthickness=0,
-    command=framing,
+    command=lambda: framing(canvas, window),
     relief="flat"
 )
 button_2.place(
@@ -155,4 +158,5 @@ button_5.place(
 )
 
 window.resizable(False, False)
+
 window.mainloop()
