@@ -12,9 +12,11 @@ from PIL import Image, ImageTk
 import subprocess
 import os
 import components.frame_manager as fm
+import components.face_smoother as fs
 input_path = ""
 
-        
+PREV_HEIGHT = 900.0
+PREV_WIDTH = 300.0
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"C:\Users\chukw\Documents\UWI Courses\COMP3901 - Capstone Project\figma-design\build\assets\frame0")
 
@@ -23,13 +25,32 @@ def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
 
-def select_upload_folder(window):
-    global input_path
+def select_upload_folder():
+    global input_path,window,canvas
     currdir = os.getcwd()
     input_path = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Please select a directory',)
 
+    input_img = PhotoImage(file=relative_to_assets(input_path))
+
+    canvas.create_image(
+        944.0,
+        398.0,
+        image=input_img
+    )
+    window.mainloop()
+
 def remove_blemish():
-    subprocess.run(['python', 'components/blemish_remover.py', input_path])
+    image, face = fs.detect_face(input_path)
+    smooth_img = fs.apply_face_smoothing(image,face)
+    #fs.draw_squares(smooth_img,face)
+    #subprocess.run(['python', 'components/blemish_remover.py', input_path])
+    imgtk = ImageTk.PhotoImage(image = Image.fromarray(smooth_img))
+    canvas.create_image(
+        944.0,
+        398.0,
+        image=imgtk
+    )
+    window.mainloop()
 
 def color_correction():
     pass
@@ -37,9 +58,16 @@ def color_correction():
 def framing(canvas,window):
     currdir = os.getcwd()
     overlay = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Select Frame Image',)
+
     img = fm.overlay(input_path,overlay)
     
-    print("Framed")
+    imgtk = ImageTk.PhotoImage(image = Image.fromarray(img))
+    canvas.create_image(
+        944.0,
+        398.0,
+        image=imgtk
+    )
+    window.mainloop()
 
 def sizing():
     pass
@@ -147,7 +175,7 @@ button_5 = Button(
     image=button_image_5,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: select_upload_folder(window),
+    command=select_upload_folder,
     relief="flat"
 )
 button_5.place(
@@ -158,5 +186,4 @@ button_5.place(
 )
 
 window.resizable(False, False)
-
 window.mainloop()
