@@ -14,6 +14,7 @@ import os
 import components.frame_manager as fm
 import components.face_smoother as fs
 input_path = ""
+current_img = None
 
 PREV_HEIGHT = 900.0
 PREV_WIDTH = 300.0
@@ -25,30 +26,32 @@ def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
 
-def select_upload_folder():
-    global input_path,window,canvas
+def select_image():
+    global input_path, window, canvas, current_img
     currdir = os.getcwd()
     input_path = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Please select a directory',)
 
-    input_img = PhotoImage(file=relative_to_assets(input_path))
-
+    current_img = fs.resize_img(fs.get_img_array(input_path),(500,500))
+    photo_img = ImageTk.PhotoImage(image = Image.fromarray(current_img))
+    
     canvas.create_image(
         944.0,
         398.0,
-        image=input_img
+        image=photo_img
     )
     window.mainloop()
 
 def remove_blemish():
-    image, face = fs.detect_face(input_path)
-    smooth_img = fs.apply_face_smoothing(image,face)
-    #fs.draw_squares(smooth_img,face)
+    global current_img
+    print(current_img.shape)
+    image, face = fs.detect_face(current_img)
+    current_img = fs.apply_face_smoothing(image,face)
     #subprocess.run(['python', 'components/blemish_remover.py', input_path])
-    imgtk = ImageTk.PhotoImage(image = Image.fromarray(smooth_img))
+    photo_img = ImageTk.PhotoImage(image = Image.fromarray(current_img))
     canvas.create_image(
         944.0,
         398.0,
-        image=imgtk
+        image=photo_img
     )
     window.mainloop()
 
@@ -56,12 +59,13 @@ def color_correction():
     pass
 
 def framing(canvas,window):
+    global current_img
     currdir = os.getcwd()
-    overlay = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Select Frame Image',)
+    overlay_path = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Select Frame Image',)
 
-    img = fm.overlay(input_path,overlay)
+    current_img = fm.overlay(current_img,overlay_path)
     
-    imgtk = ImageTk.PhotoImage(image = Image.fromarray(img))
+    imgtk = ImageTk.PhotoImage(image = Image.fromarray(current_img))
     canvas.create_image(
         944.0,
         398.0,
@@ -71,6 +75,10 @@ def framing(canvas,window):
 
 def sizing():
     pass
+
+def save():
+    global current_img
+    fs.save(current_img)
 
 window = Tk()
 window.geometry("1280x720")
@@ -105,13 +113,14 @@ image_1 = canvas.create_image(
 )
 '''
 
+
 button_image_1 = PhotoImage(
     file=relative_to_assets("button_1.png"))
 button_1 = Button(
     image=button_image_1,
     borderwidth=0,
     highlightthickness=0,
-    command=sizing,
+    command=save,
     relief="flat"
 )
 button_1.place(
@@ -175,7 +184,7 @@ button_5 = Button(
     image=button_image_5,
     borderwidth=0,
     highlightthickness=0,
-    command=select_upload_folder,
+    command=select_image,
     relief="flat"
 )
 button_5.place(
