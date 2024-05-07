@@ -22,20 +22,19 @@ def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
   
-def select_image():
+def upload_image():
     global input_path, canvas, window, image_history
 
     currdir = os.getcwd()
     input_path = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Please select a directory',filetypes=[('image files',('.png','.jpeg','.jpg'))])
     current_img = ir.get_rgb_from_path(input_path)
     img_copy = current_img.copy()
-    image_history = [img_copy]
+    image_history = [ir.resize_to_preview(img_copy)]
 
-    #update_preview(current_img)
     imgtk = ImageTk.PhotoImage(image = Image.fromarray(image_history[-1]))
     canvas.create_image(
-        944.0,
-        398.0,
+        933.0,
+        390.0,
         image=imgtk
     )
     window.mainloop()
@@ -49,8 +48,8 @@ def remove_blemish(canvas,window):
     
     imgtk = ImageTk.PhotoImage(image = Image.fromarray(image_history[-1]))
     canvas.create_image(
-        944.0,
-        398.0,
+        933.0,
+        390.0,
         image=imgtk
     )
     window.mainloop()
@@ -68,8 +67,8 @@ def framing(canvas,window):
 
     imgtk = ImageTk.PhotoImage(image = Image.fromarray(image_history[-1]))
     canvas.create_image(
-        944.0,
-        398.0,
+        933.0,
+        390.0,
         image=imgtk
     )
     window.mainloop()
@@ -84,8 +83,8 @@ def undo():
   
     imgtk = ImageTk.PhotoImage(image = Image.fromarray(image_history[-1]))
     canvas.create_image(
-        944.0,
-        398.0,
+        933.0,
+        390.0,
         image=imgtk)
     window.mainloop()
 
@@ -127,9 +126,15 @@ button_1 = Button(
     borderwidth=0,
     highlightthickness=0,
     command=undo,
-    relief="flat"
+    relief="flat",
+    name="undo"
 )
-
+button_1.place(
+    x=555.0,
+    y=351.0,
+    width=61.0,
+    height=61.0
+)
 
 button_image_2 = PhotoImage(
     file=relative_to_assets("button_2.png"))
@@ -138,9 +143,15 @@ button_2 = Button(
     borderwidth=0,
     highlightthickness=0,
     command=save,
-    relief="flat"
+    relief="flat",
+    name="save"
 )
-
+button_2.place(
+    x=238.0,
+    y=613.0,
+    width=173.0,
+    height=44.716102600097656
+)
 
 button_image_3 = PhotoImage(
     file=relative_to_assets("button_3.png"))
@@ -149,9 +160,15 @@ button_3 = Button(
     borderwidth=0,
     highlightthickness=0,
     command=lambda: framing(canvas, window),
-    relief="flat"
+    relief="flat",
+    name="framing"
 )
-
+button_3.place(
+    x=207.0,
+    y=460.0,
+    width=236.0,
+    height=61.0
+)
 
 button_image_4 = PhotoImage(
     file=relative_to_assets("button_4.png"))
@@ -160,9 +177,15 @@ button_4 = Button(
     borderwidth=0,
     highlightthickness=0,
     command= color_correction,
-    relief="flat"
+    relief="flat",
+    name="color_corr"
 )
-
+button_4.place(
+    x=207.0,
+    y=351.0,
+    width=236.0,
+    height=61.0
+)
 
 button_image_5 = PhotoImage(
     file=relative_to_assets("button_5.png"))
@@ -171,7 +194,14 @@ button_5 = Button(
     borderwidth=0,
     highlightthickness=0,
     command=lambda: remove_blemish(canvas,window),
-    relief="flat"
+    relief="flat",
+    name="blemish"
+)
+button_5.place(
+    x=207.0,
+    y=242.0,
+    width=236.0,
+    height=61.0
 )
 
 button_image_6 = PhotoImage(
@@ -180,8 +210,15 @@ button_6 = Button(
     image=button_image_6,
     borderwidth=0,
     highlightthickness=0,
-    command=lambda: print("button_6 clicked"),
-    relief="flat"
+    command=lambda: print("Upload folder"),
+    relief="flat",
+    name="upload_folder"
+)
+button_6.place(
+    x=352.0,
+    y=137.0,
+    width=162.0,
+    height=61.0
 )
 
 button_image_7 = PhotoImage(
@@ -190,16 +227,23 @@ button_7 = Button(
     image=button_image_7,
     borderwidth=0,
     highlightthickness=0,
-    command=select_image,
-    relief="flat"
+    command=upload_image,
+    relief="flat",
+    name="upload_image"
+)
+button_7.place(
+    x=135.0,
+    y=137.0,
+    width=162.0,
+    height=61.0
 )
 
-image_image_1 = PhotoImage(file=relative_to_assets("image_1.png"))
+'''image_image_1 = PhotoImage(file=relative_to_assets("image_1.png"))
 image_1 = canvas.create_image(
     933.0,
     390.0,
     image=image_image_1
-)
+)'''
 
 if __name__ == "__main__":
     canvas.place(x = 0, y = 0)
@@ -211,48 +255,7 @@ if __name__ == "__main__":
         fill="#A364FF",
         font=("Inter", 36 * -1)
     )
-    button_1.place(
-        x=555.0,
-        y=351.0,
-        width=61.0,
-        height=61.0
-    )
-    button_2.place(
-        x=238.0,
-        y=613.0,
-        width=173.0,
-        height=44.716102600097656
-    )
-    button_3.place(
-        x=207.0,
-        y=460.0,
-        width=236.0,
-        height=61.0
-    )
-    button_4.place(
-        x=207.0,
-        y=351.0,
-        width=236.0,
-        height=61.0
-    )
-    button_5.place(
-        x=207.0,
-        y=242.0,
-        width=236.0,
-        height=61.0
-    )
-    button_6.place(
-        x=352.0,
-        y=137.0,
-        width=162.0,
-        height=61.0
-    )
-    button_7.place(
-        x=135.0,
-        y=137.0,
-        width=162.0,
-        height=61.0
-    )
-
+    canvas.pack()
+    print(button_1.winfo_name())
     window.resizable(False, False)
     window.mainloop()
