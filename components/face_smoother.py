@@ -42,11 +42,3 @@ def draw_squares(img, face):
     
     cv.imshow("Face Detection",img)
 
-def get_img_array(file_path):
-    return cv.imread(filename=file_path,flags=cv.COLOR_BGR2RGB)
-
-def resize_img(img,size):
-    return cv.cvtColor(cv.resize(img, size, interpolation=cv.INTER_AREA), cv.COLOR_BGR2RGB)
-
-def save(img):
-    cv.imwrite(filename="test-export.png",img=cv.cvtColor(img, cv.COLOR_RGB2BGR))

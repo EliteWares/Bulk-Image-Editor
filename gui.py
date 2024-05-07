@@ -13,45 +13,47 @@ import subprocess
 import os
 import components.frame_manager as fm
 import components.face_smoother as fs
+import components.image_resizer as ir
 input_path = ""
 current_img = None
 
 PREV_HEIGHT = 900.0
 PREV_WIDTH = 300.0
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path(r"C:\Users\chukw\Documents\UWI Courses\COMP3901 - Capstone Project\figma-design\build\assets\frame0")
+ASSETS_PATH = OUTPUT_PATH / Path(r"res")
 
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
-
+  
 def select_image():
-    global input_path, window, canvas, current_img
+    global input_path, current_img, canvas, window
+
     currdir = os.getcwd()
     input_path = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Please select a directory',)
-
-    current_img = fs.resize_img(fs.get_img_array(input_path),(500,500))
-    photo_img = ImageTk.PhotoImage(image = Image.fromarray(current_img))
+    current_img = ir.get_rgb_from_path(input_path)
     
+    #update_preview(current_img)
+    imgtk = ImageTk.PhotoImage(image = Image.fromarray(current_img))
     canvas.create_image(
         944.0,
         398.0,
-        image=photo_img
+        image=imgtk
     )
     window.mainloop()
 
-def remove_blemish():
+def remove_blemish(canvas,window):
     global current_img
-    print(current_img.shape)
     image, face = fs.detect_face(current_img)
     current_img = fs.apply_face_smoothing(image,face)
     #subprocess.run(['python', 'components/blemish_remover.py', input_path])
-    photo_img = ImageTk.PhotoImage(image = Image.fromarray(current_img))
+    
+    imgtk = ImageTk.PhotoImage(image = Image.fromarray(current_img))
     canvas.create_image(
         944.0,
         398.0,
-        image=photo_img
+        image=imgtk
     )
     window.mainloop()
 
@@ -77,8 +79,9 @@ def sizing():
     pass
 
 def save():
-    global current_img
-    fs.save(current_img)
+    ir.save(current_img)
+
+
 
 window = Tk()
 window.geometry("1280x720")
@@ -168,7 +171,7 @@ button_4 = Button(
     image=button_image_4,
     borderwidth=0,
     highlightthickness=0,
-    command= remove_blemish,
+    command= lambda: remove_blemish(canvas,window),
     relief="flat"
 )
 button_4.place(
