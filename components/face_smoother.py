@@ -4,7 +4,7 @@ import cv2 as cv
 def detect_face(file_path):
     image = file_path
     gs = cv.cvtColor(image, cv.COLOR_RGB2GRAY)
-    fc = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
+    fc = cv.CascadeClassifier('models/haarcascade_frontalface_default.xml')
     
     faces = fc.detectMultiScale(gs,scaleFactor=1.1, minNeighbors=10)
     max_area = 0
