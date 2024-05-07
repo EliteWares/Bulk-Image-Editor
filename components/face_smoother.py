@@ -15,8 +15,7 @@ def detect_face(file_path):
         if area > max_area:
             max_area = area
             face = [x,y,w,h]
-        #draw_squares(image,[x,y,w,h])
-    
+            
     return image, face
 
    
