@@ -16,7 +16,7 @@ def resize_to_preview(image):
     max_height = 544
 
     # Resize image while maintaining aspect ratio
-    if width > max_width or height > max_height:
+    if width != max_width or height != max_height:
         if aspect_ratio > 1:
             new_width = max_width
             new_height = int(new_width / aspect_ratio)
