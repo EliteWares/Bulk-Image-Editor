@@ -2,7 +2,7 @@ import cv2 as cv
 from tkinter import filedialog
 
 def resize_image(img, dimensions):
-    return cv.cvtColor(cv.resize(img, dimensions, interpolation=cv.INTER_AREA), cv.COLOR_BGR2RGB)
+    return cv.resize(img, dimensions, interpolation=cv.INTER_AREA)
 
 def resize_to_preview(image):
     # Get dimensions of the input image
@@ -48,4 +48,5 @@ def save(img):
     save_path = filedialog.asksaveasfilename(title="Choose a save location",
     filetypes=[('image files', ('.png', '.jpg','.jpeg'))])
 
-    cv.imwrite(filename=save_path,img=get_bgr_from_rgb(img))
+    if save_path:
+        cv.imwrite(filename=save_path,img=get_bgr_from_rgb(img))

@@ -6,11 +6,14 @@ import os
 import components.frame_manager as fm
 import components.face_smoother as fs
 import components.image_resizer as ir
+import components.popup as pup
 
 # Figma Token = figd_PO7Yp3W-flDKHxANy3QQGEW0gwi_g2VYd_CNM7mW
 
 input_path = ""
 image_history = []
+orig_img_height = 0.0
+orig_img_width = 0.0
 
 PREVIEW_HEIGHT = 900.0
 PREVIEW_WIDTH = 300.0
@@ -24,10 +27,12 @@ def relative_to_assets(path: str) -> Path:
   
 def upload_image():
     global input_path, canvas, window, image_history
+    global orig_img_height, orig_img_width
 
     currdir = os.getcwd()
     input_path = filedialog.askopenfilename(parent=window, initialdir=currdir, title='Please select a directory',filetypes=[('image files',('.png','.jpeg','.jpg'))])
     current_img = ir.get_rgb_from_path(input_path)
+    orig_img_height, orig_img_width, _ = current_img.shape
     img_copy = current_img.copy()
     image_history = [ir.resize_to_preview(img_copy)]
 
@@ -89,27 +94,27 @@ def undo():
     window.mainloop()
 
 def save():
-    ir.save(image_history[-1])
+    pup.dimensions_popup(orig_img_width,orig_img_height,image_history[-1])
 
-def changeOnHover(button, reg_btn, hov_btn):
-    
 
+def configure_button(button, reg_btn, hov_btn, dim, pos):
     img_hov = PhotoImage(file=relative_to_assets(hov_btn))
     img_reg = PhotoImage(file=relative_to_assets(reg_btn))
-    
-    #hov_shape = ir.get_rgb_from_path(f"imgs/res/{hov_btn}").shape
-    #reg_shape = ir.get_rgb_from_path(f"imgs/res/{reg_btn}").shape
-    
-    #print(f"Hover shape: {hov_shape}, Regular shape: {reg_shape}")
-    
+           
     button.bind("<Enter>", func=lambda e: button.config(image=img_hov))
     button.bind("<Leave>", func=lambda e: button.config(image=img_reg))
-    
+
+    button.place(
+        x=pos[0],
+        y=pos[1],
+        width=dim[0],
+        height=dim[1]
+    )
 
 window = Tk()
 window.geometry("1280x720")
 window.configure(bg = "#181818")
-
+window.resizable(False, False)
 
 canvas = Canvas(
     window,
@@ -121,16 +126,17 @@ canvas = Canvas(
     relief = "ridge"
 )
 
-
-'''
-image_image_1 = PhotoImage(
-    file=relative_to_assets("image_1.png"))
-image_1 = canvas.create_image(
-    944.0,
-    398.0,
-    image=image_image_1
+canvas.create_text(
+    443.0,
+    32.0,
+    anchor="nw",
+    text="Bulk Image Editor",
+    fill="#A364FF",
+    font=("Inter", 36 * -1)
 )
-'''
+
+canvas.place(x = 0, y = 0)
+canvas.pack()
 
 
 button_image_1 = PhotoImage(
@@ -144,13 +150,11 @@ button_1 = Button(
     relief="flat",
     name="undo"
 )
-button_1.place(
-    x=555.0,
-    y=351.0,
-    width=81.0,
-    height=81.0
-)
-changeOnHover(button_1,"button_1.png","button_1_hover.png")
+configure_button(button = button_1,
+                 reg_btn = "button_1.png",
+                 hov_btn = "button_1_hover.png",
+                 dim = (81.0,81.0),
+                 pos = (555.0,351.0))
 
 
 button_image_2 = PhotoImage(
@@ -164,13 +168,11 @@ button_2 = Button(
     background="#181818",
     name="save"
 )
-button_2.place(
-    x=238.0,
-    y=613.0,
-    width=201,
-    height=69.0
-)
-changeOnHover(button_2,"button_2.png","button_2_hover.png")
+configure_button(button = button_2,
+                 reg_btn = "button_2.png",
+                 hov_btn = "button_2_hover.png",
+                 dim = (201.0,69.0),
+                 pos = (238.0,613.0))
 
 button_image_3 = PhotoImage(
     file=relative_to_assets("button_3.png"))
@@ -183,13 +185,11 @@ button_3 = Button(
     background="#181818",
     name="framing"
 )
-button_3.place(
-    x=207.0,
-    y=460.0,
-    width=268.0,
-    height=78.0
-)
-changeOnHover(button_3,"button_3.png","button_3_hover.png")
+configure_button(button = button_3,
+                 reg_btn = "button_3.png",
+                 hov_btn = "button_3_hover.png",
+                 dim = (268.0,78.0),
+                 pos = (207.0,460.0))
 
 button_image_4 = PhotoImage(
     file=relative_to_assets("button_4.png"))
@@ -202,13 +202,11 @@ button_4 = Button(
     background="#181818",
     name="color_corr"
 )
-button_4.place(
-    x=207.0,
-    y=351.0,
-    width=268.0,
-    height=78.0
-)
-changeOnHover(button_4,"button_4.png","button_4_hover.png")
+configure_button(button = button_4,
+                 reg_btn = "button_4.png",
+                 hov_btn = "button_4_hover.png",
+                 dim = (268.0,78.0),
+                 pos = (207.0,351.0))
 
 button_image_5 = PhotoImage(
     file=relative_to_assets("button_5.png"))
@@ -221,13 +219,11 @@ button_5 = Button(
     background="#181818",
     name="blemish"
 )
-button_5.place(
-    x=207.0,
-    y=242.0,
-    width=268.0,
-    height=82.0
-)
-changeOnHover(button_5,"button_5.png","button_5_hover.png")
+configure_button(button = button_5,
+                 reg_btn = "button_5.png",
+                 hov_btn = "button_5_hover.png",
+                 dim = (268.0,82.0),
+                 pos = (207.0,242.0))
 
 button_image_6 = PhotoImage(
     file=relative_to_assets("button_6.png"))
@@ -241,13 +237,11 @@ button_6 = Button(
     name="upload_folder",
     
 )
-button_6.place(
-    x=352.0,
-    y=137.0,
-    width=189.0,
-    height=78.0
-)
-changeOnHover(button_6,"button_6.png","button_6_hover.png")
+configure_button(button = button_6,
+                 reg_btn = "button_6.png",
+                 hov_btn = "button_6_hover.png",
+                 dim = (189.0,78.0),
+                 pos = (352.0,137.0))
 
 button_image_7 = PhotoImage(
     file=relative_to_assets("button_7.png"))
@@ -260,14 +254,24 @@ button_7 = Button(
     background="#181818",
     name="upload_image"
 )
-button_7.place(
-    x=135.0,
-    y=137.0,
-    width=189.0,
-    height=78.0
-)
-changeOnHover(button_7,"button_7.png","button_7_hover.png")
+configure_button(button = button_7,
+                 reg_btn = "button_7.png",
+                 hov_btn = "button_7_hover.png",
+                 dim = (189.0,78.0),
+                 pos = (135.0,137.0))
 
+
+window.mainloop()
+
+'''
+image_image_1 = PhotoImage(
+    file=relative_to_assets("image_1.png"))
+image_1 = canvas.create_image(
+    944.0,
+    398.0,
+    image=image_image_1
+)
+'''
 
 '''image_image_1 = PhotoImage(file=relative_to_assets("image_1.png"))
 image_1 = canvas.create_image(
@@ -275,18 +279,3 @@ image_1 = canvas.create_image(
     390.0,
     image=image_image_1
 )'''
-
-if __name__ == "__main__":
-    
-    canvas.place(x = 0, y = 0)
-    canvas.create_text(
-        443.0,
-        32.0,
-        anchor="nw",
-        text="Bulk Image Editor",
-        fill="#A364FF",
-        font=("Inter", 36 * -1)
-    )
-    canvas.pack()
-    window.resizable(False, False)
-    window.mainloop()
