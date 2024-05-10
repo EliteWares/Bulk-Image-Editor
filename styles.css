@@ -1,0 +1,80 @@
+* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Global Styles */
+.container {
+    background-color: #e99090;
+}
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #333;
+    color: #e99090;
+    padding: 20px 0;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2em;
+}
+
+nav ul {
+    list-style: none;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+#hero {
+    background-image: url('hero-bg.jpg');
+    background-size: cover;
+    color: #fff;
+    text-align: center;
+    padding: 100px 0;
+}
+
+#hero h2 {
+    font-size: 3em;
+}
+
+.btn {
+    display: inline-block;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+#features {
+    background-color: #f4f4f4;
+    padding: 50px 0;
+    text-align: center;
+}
+
+#features ul {
+    list-style: none;
+}
+
+#features ul li {
+    margin: 20px 0;
+}
+
+#features ul li i {
+    margin-right: 10px;
+}
