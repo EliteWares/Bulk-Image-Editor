@@ -1,21 +1,52 @@
 import tkinter as tk
+import components.face_smoother as fs
 import components.image_resizer as ir
+import components.file_manager as fman
+import components.frame_manager as fm
+import components.color_corrector as cc
 
 COLOR_BG = "#181818"
 COLOR_TEXT = "#D9D9D9"
 
-def confirm_dimensions(w_entry,h_entry,img,win):
+def save_image(w_entry,h_entry,img,win):
     width = int(w_entry.get())
     height = int(h_entry.get())
     
     resized_img = ir.resize_image(img,(width,height))
-    ir.save(resized_img)
+    fman.save_image(resized_img)
 
     win.destroy()
-    
+   
+def save_bulk(w_entry, h_entry, imgs, win, commands):
+    width = int(w_entry.get())
+    height = int(h_entry.get())
+    res = []
+    for img in imgs:
+        img_to_add = img.copy()
+        for comm in commands:            
+            match comm[0]:
+                case "remove blemish":
+                    temp_img, face = fs.detect_face(img_to_add)
+                    img_to_add = fs.apply_face_smoothing(temp_img,face)
+                case "framing":
+                    img_to_add = fm.overlay(fman.get_rgb_from_bgr(img_to_add),comm[1])                    
+                case "color correction":
+                    for corr in comm[1]:
+                        if corr[0] == "Temperature":
+                            print("Temp")
+                        elif corr[0] == "Brightness":
+                            print("bright")
+                        elif corr[0] == "Saturation":
+                            print("satur")
 
-# Create the main window
-def dimensions_popup(w, h, img):
+        img_to_add = ir.resize_image(fman.get_bgr_from_rgb(img_to_add),(width,height))
+        res.append(img_to_add)
+        
+    fman.save_images(res)
+    win.destroy()
+
+
+def open_popup(w, h, img, commands):
     window = tk.Tk()
     window.title("Input Dimensions")
     window.configure(bg = COLOR_BG)
@@ -57,10 +88,13 @@ def dimensions_popup(w, h, img):
     # Create the confirm button
     confirm_button = tk.Button(window,
                                text="Confirm",
-                               command=lambda: confirm_dimensions(width_entry,height_entry,img,window),
                                bg = COLOR_TEXT,
                                fg=COLOR_BG)
     confirm_button.grid(row=4, columnspan=2, padx=10, pady=10)
 
+    if len(commands) > 0:
+        confirm_button.configure(command=lambda: save_bulk(width_entry,height_entry,img,window,commands))
+    else:
+        confirm_button.configure(command=lambda: save_image(width_entry,height_entry,img,window))
     # Run the Tkinter event loop
     window.mainloop()    

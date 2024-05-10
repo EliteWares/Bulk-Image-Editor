@@ -5,9 +5,12 @@ import cv2
 from PIL import Image, ImageTk
 
 class ImageAdjustmentPopup:
-    def __init__(self, master, image):
+    def __init__(self, master, image, command):
         self.master = master
         self.master.title("Image Adjustment")
+
+        self.is_command = command
+        self.commands = []
         
         self.image = image
         self.image_copy = self.image.copy()
@@ -23,7 +26,8 @@ class ImageAdjustmentPopup:
         
         self.create_widgets()
         self.update_image()
-    
+
+            
     def create_widgets(self):
         self.canvas = tk.Canvas(self.master, width=self.width, height=self.height)
         self.canvas.pack()
@@ -53,9 +57,14 @@ class ImageAdjustmentPopup:
 
 
     def change_mode(self,mode):
+        if self.is_command:
+            self.commands.append([self.label.cget("text"),self.slider.get()])
+            
         self.image_copy = self.image.copy()
+        
         match mode:
             case "temperature":
+                
                 self.label.configure(text="Temperature")
                 self.slider.configure(from_=-100, to=100, command=self.adjust_temperature)
                 self.slider.set(0)
@@ -140,7 +149,7 @@ class ImageAdjustmentPopup:
         self.image_tk = ImageTk.PhotoImage(image=self.display_image)
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.image_tk)
 
-def open_popup(image):
+def open_popup(image, command):
     popup = tk.Toplevel()
-    app = ImageAdjustmentPopup(popup, image)
+    app = ImageAdjustmentPopup(popup, image, command)
     return app

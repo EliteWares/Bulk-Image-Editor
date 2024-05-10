@@ -34,10 +34,3 @@ def apply_face_smoothing(image, face):
     #return cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
 
-
-def draw_squares(img, face):
-    cv.rectangle(img, (face[0],face[1]), (face[0]+face[2], face[1]+face[3]),(255,0,0), 5)
-    #resize_img = cv.resize(img, (500,500), interpolation=cv.INTER_AREA)
-    
-    cv.imshow("Face Detection",img)
-

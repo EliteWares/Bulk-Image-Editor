@@ -6,10 +6,10 @@ import os
 import components.frame_manager as fm
 import components.face_smoother as fs
 import components.image_resizer as ir
+import components.file_manager as fman
 import components.color_corrector as cc
-import components.exposure as exp
 import components.popup as pup
-import components.test as test
+
 
 PREVIEW_HEIGHT = 900.0
 PREVIEW_WIDTH = 300.0
@@ -23,9 +23,12 @@ class BatchImageEditor:
         self.window.geometry("1280x720")
         self.window.configure(bg = "#181818")
         self.window.resizable(False, False)
+        self.is_command = False
         self.color_cor = None
-        self.input_path = ""
+        self.file_path = ""
+        self.command_list = []
         self.image_history = []
+        self.images = []
         self.orig_img_height = 0.0
         self.orig_img_width = 0.0
 
@@ -36,6 +39,46 @@ class BatchImageEditor:
     def relative_to_assets(self,path: str) -> Path:
         return ASSETS_PATH / Path(path)
     
+    def upload_image(self):
+        currdir = os.getcwd()
+        
+        self.file_path = filedialog.askopenfilename(parent=self.window,
+                                                     initialdir=currdir,
+                                                     title='Please select a directory',
+                                                     filetypes=[('image files',('.png','.jpeg','.jpg'))]
+                                                     )
+        if not self.file_path:
+            return
+        image = fm.get_rgb_from_path(self.file_path)
+        
+        
+        self.orig_img_height, self.orig_img_width, _ = image.shape
+        img_copy = image.copy()
+        self.image_history = [ir.resize_to_preview(img_copy)]
+
+        self.update_preview()
+
+    def upload_folder(self):
+        self.is_command = True
+        currdir = os.getcwd()
+        
+        self.folder_path = filedialog.askdirectory(parent=self.window,
+                                                   initialdir= currdir,
+                                                   title="Select folder of images")
+        
+        if not self.folder_path:
+            return
+        
+        self.images = fman.get_bgr_from_folder(self.folder_path)
+        self.orig_img_height, self.orig_img_width, _ = self.images[0].shape        
+
+        img_copy = fman.get_rgb_from_bgr(self.images[0].copy())
+        self.image_history = [ir.resize_to_preview(img_copy)]
+        
+        self.update_preview()
+
+        
+
     def update_preview(self):
         imgtk = ImageTk.PhotoImage(image = Image.fromarray(self.image_history[-1]))
         self.canvas.create_image(
@@ -45,38 +88,31 @@ class BatchImageEditor:
         )
         self.window.mainloop()
     
-    def upload_image(self):
-        currdir = os.getcwd()
-        
-        self.input_path = filedialog.askopenfilename(parent=self.window,
-                                                     initialdir=currdir,
-                                                     title='Please select a directory',
-                                                     filetypes=[('image files',('.png','.jpeg','.jpg'))]
-                                                     )
-        image = ir.get_rgb_from_path(self.input_path)
-        self.orig_img_height, self.orig_img_width, _ = image.shape
-        img_copy = image.copy()
-        self.image_history = [ir.resize_to_preview(img_copy)]
-
-        self.update_preview()
     
     def remove_blemish(self):
+        if self.is_command:
+            self.command_list.append(["remove blemish"])
+
         image, face = fs.detect_face(self.image_history[-1].copy())
         current_img = fs.apply_face_smoothing(image,face)
         self.image_history.append(current_img)
 
-        #subprocess.run(['python', 'components/blemish_remover.py', input_path])
+        #subprocess.run(['python', 'components/blemish_remover.py', file_path])
 
         self.update_preview()
     
+
     def get_corrected_img(self):
+        if self.is_command:
+            self.command_list.append(["color correction",self.color_cor.commands])
+
+
         self.image_history.append(self.color_cor.image)
         self.color_cor.master.destroy()
         self.update_preview()
-        
-
+     
     def color_correction(self):
-        self.color_cor = cc.open_popup(self.image_history[-1])
+        self.color_cor = cc.open_popup(self.image_history[-1],self.is_command)
         self.btn = self.color_cor.get_btn()
         self.btn.configure(command=self.get_corrected_img)
         
@@ -85,6 +121,12 @@ class BatchImageEditor:
         currdir = os.getcwd()
         overlay_path = filedialog.askopenfilename(parent=self.window, initialdir=currdir, title='Select Frame Image',)
         
+        if not overlay_path:
+            return
+
+        if self.is_command:
+            self.command_list.append(["framing",overlay_path])
+
         current_img = fm.overlay(self.image_history[-1],overlay_path)
         self.image_history.append(current_img)
 
@@ -93,11 +135,23 @@ class BatchImageEditor:
     def undo(self):
         if len(self.image_history) > 1:
             self.image_history.pop()
+        
+            if self.is_command:
+                self.command_list.pop()
     
         self.update_preview()
     
     def save(self):
-        pup.dimensions_popup(self.orig_img_width,self.orig_img_height,self.image_history[-1])
+        if self.is_command:
+            pup.open_popup(self.orig_img_width,
+                       self.orig_img_height,
+                       self.images,
+                       self.command_list)
+        else:
+            pup.open_popup(self.orig_img_width,
+                       self.orig_img_height,
+                       self.image_history[-1],
+                       self.command_list)
 
 
     def configure_button(self,button, reg_btn, hov_btn, dim, pos):
@@ -225,7 +279,7 @@ class BatchImageEditor:
             image=self.button_image_6,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("Upload folder"),
+            command=self.upload_folder,
             relief="flat",
             background="#181818",
             name="upload_folder",
