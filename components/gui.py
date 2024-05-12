@@ -1,8 +1,9 @@
 from pathlib import Path
-from tkinter import Tk, Canvas, Button, PhotoImage, filedialog
+from tkinter import Tk, Canvas, Button, PhotoImage, filedialog, Frame
 from PIL import Image, ImageTk
 import subprocess
 import os
+import components.window_frame_manager as wfm
 import components.frame_manager as fm
 import components.face_smoother as fs
 import components.image_resizer as ir
@@ -16,13 +17,15 @@ PREVIEW_WIDTH = 300.0
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"../imgs/res")
 
+
 class BatchImageEditor:
     def __init__(self, root:Tk):
         self.window = root
         self.window.title("Image Adjustment")
         self.window.geometry("1280x720")
         self.window.configure(bg = "#181818")
-        self.window.resizable(False, False)
+        self.window.overrideredirect(True)
+        
         self.is_command = False
         self.color_cor = None
         self.file_path = ""
@@ -174,6 +177,8 @@ class BatchImageEditor:
         )    
 
     def create_widgets(self):
+        wfm.DraggableWindow(self.window)
+        
         self.canvas = Canvas(
             self.window,
             bg = "#181818",

@@ -46,8 +46,7 @@ def save_bulk(w_entry, h_entry, imgs, win, commands):
                                 img_to_add - cc.adjust_shadows(corr[1],img_to_add)
                             case "Saturation":
                                 img_to_add = cc.adjust_saturation(corr[1],img_to_add)
-                            case "White Balance":
-                                img_to_add - cc.apply_white_balance(img_to_add)
+                            
                         
                         
                     
