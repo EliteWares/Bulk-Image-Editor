@@ -29,19 +29,32 @@ def save_bulk(w_entry, h_entry, imgs, win, commands):
                     temp_img, face = fs.detect_face(img_to_add)
                     img_to_add = fs.apply_face_smoothing(temp_img,face)
                 case "framing":
-                    img_to_add = fm.overlay(fman.get_rgb_from_bgr(img_to_add),comm[1])                    
+                    img_to_add = fm.overlay(img_to_add,comm[1])
                 case "color correction":
                     for corr in comm[1]:
-                        if corr[0] == "Temperature":
-                            print("Temp")
-                        elif corr[0] == "Brightness":
-                            print("bright")
-                        elif corr[0] == "Saturation":
-                            print("satur")
+                        match corr[0]:
+                            case "Temperature":
+                                print(corr[1])
+                                img_to_add = cc.adjust_temperature(corr[1],img_to_add)
+                            case "Brightness":
+                                img_to_add = cc.adjust_brightness(corr[1],img_to_add)
+                            case "Contrast":
+                                img_to_add - cc.adjust_contrast(corr[1],img_to_add)
+                            case "Highlights":
+                                img_to_add - cc.adjust_highlights(corr[1],img_to_add)
+                            case "Shadows":
+                                img_to_add - cc.adjust_shadows(corr[1],img_to_add)
+                            case "Saturation":
+                                img_to_add = cc.adjust_saturation(corr[1],img_to_add)
+                            case "White Balance":
+                                img_to_add - cc.apply_white_balance(img_to_add)
+                        
+                        
+                    
 
-        img_to_add = ir.resize_image(fman.get_bgr_from_rgb(img_to_add),(width,height))
-        res.append(img_to_add)
-        
+        img_to_add = ir.resize_image(img_to_add,(width,height))
+        res.append(fman.get_bgr_from_rgb(img_to_add))
+         
     fman.save_images(res)
     win.destroy()
 

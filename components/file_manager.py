@@ -20,6 +20,23 @@ def get_bgr_from_folder(folder_path):
             print(f"Skipping non-image file: {file_path}")
     return images
 
+def get_rgb_from_folder(folder_path):
+    images = []
+    
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        # Check if the file is a valid image file
+        if os.path.isfile(file_path) and any(filename.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png']):
+            # Read the image from file
+            image = cv.cvtColor(cv.imread(file_path),cv.COLOR_BGR2RGB)
+            if image is not None:
+                images.append(image)
+            else:
+                print(f"Unable to read image from file: {file_path}")
+        else:
+            print(f"Skipping non-image file: {file_path}")
+    return images
+
 def get_rgb_from_path(file_path):
     return cv.cvtColor(cv.imread(filename=file_path), cv.COLOR_BGR2RGB)
 

@@ -49,7 +49,7 @@ class BatchImageEditor:
                                                      )
         if not self.file_path:
             return
-        image = fm.get_rgb_from_path(self.file_path)
+        image = fman.get_rgb_from_path(self.file_path)
         
         
         self.orig_img_height, self.orig_img_width, _ = image.shape
@@ -69,10 +69,10 @@ class BatchImageEditor:
         if not self.folder_path:
             return
         
-        self.images = fman.get_bgr_from_folder(self.folder_path)
+        self.images = fman.get_rgb_from_folder(self.folder_path)
         self.orig_img_height, self.orig_img_width, _ = self.images[0].shape        
 
-        img_copy = fman.get_rgb_from_bgr(self.images[0].copy())
+        img_copy = self.images[0].copy()
         self.image_history = [ir.resize_to_preview(img_copy)]
         
         self.update_preview()
@@ -104,7 +104,12 @@ class BatchImageEditor:
 
     def get_corrected_img(self):
         if self.is_command:
-            self.command_list.append(["color correction",self.color_cor.commands])
+            corrected_commands = self.color_cor.commands
+
+            corrected_commands.append([self.color_cor.label.cget("text"),self.color_cor.slider.get()])
+
+            if len(corrected_commands) > 0:
+                self.command_list.append(["color correction",corrected_commands])
 
 
         self.image_history.append(self.color_cor.image)
@@ -112,8 +117,8 @@ class BatchImageEditor:
         self.update_preview()
      
     def color_correction(self):
-        self.color_cor = cc.open_popup(self.image_history[-1],self.is_command)
-        self.btn = self.color_cor.get_btn()
+        self.color_cor = cc.open_popup(self.image_history[-1].copy(),self.is_command)
+        self.btn = self.color_cor.confirm_btn
         self.btn.configure(command=self.get_corrected_img)
         
     
