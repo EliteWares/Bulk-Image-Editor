@@ -21,6 +21,10 @@ header {
     text-align: center;
 }
 
+main {
+    padding-left: 20px;
+}
+
 header h1 {
     font-size: 2em;
 }
