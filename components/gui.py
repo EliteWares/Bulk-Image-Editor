@@ -1,7 +1,7 @@
 from pathlib import Path
 from tkinter import Tk, Canvas, Button, PhotoImage, filedialog, Frame
 from PIL import Image, ImageTk
-import subprocess
+#import subprocess
 import os
 import components.window_frame_manager as wfm
 import components.frame_manager as fm
