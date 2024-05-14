@@ -11,7 +11,7 @@ import src.color_corrector as cc
 import src.save_popup as pup
 
 from pathlib import Path
-from PIL import Image, ImageTk
+from PIL import Image
 
 PREVIEW_HEIGHT = 900.0
 PREVIEW_WIDTH = 300.0
