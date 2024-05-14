@@ -1,9 +1,9 @@
 import tkinter as tk
-import components.face_smoother as fs
-import components.image_resizer as ir
-import components.file_manager as fman
-import components.frame_manager as fm
-import components.color_corrector as cc
+import src.face_smoother as fs
+import src.image_resizer as ir
+import src.file_manager as fman
+import src.frame_manager as fm
+import src.color_corrector as cc
 
 COLOR_BG = "#181818"
 COLOR_TEXT = "#D9D9D9"
@@ -22,6 +22,7 @@ def save_bulk(w_entry, h_entry, imgs, win, commands):
     height = int(h_entry.get())
     res = []
     for img in imgs:
+        print("image being processed")
         img_to_add = img.copy()
         for comm in commands:            
             match comm[0]:

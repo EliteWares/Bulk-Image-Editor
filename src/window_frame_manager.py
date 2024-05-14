@@ -3,6 +3,7 @@ import tkinter as tk
 class DraggableWindow:
     def __init__(self, root:tk.Tk):
         self.root = root
+        self.root.overrideredirect(True)
 
         # Create a Frame to hold the custom buttons
         

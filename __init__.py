@@ -1,4 +1,4 @@
-import components.gui as gui
+import src.gui as gui
 import tkinter as tk
 
 if __name__ == "__main__":

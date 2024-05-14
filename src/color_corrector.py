@@ -244,7 +244,7 @@ class ImageAdjustmentPopup:
             
             
     def adjust_temp(self, kelvin_temp):
-        kelvin_temp = self.slider.get() #self.temp_slider.get()
+        kelvin_temp = self.slider.get() 
 
         if kelvin_temp == 0:
             self.image = self.image_copy.copy()

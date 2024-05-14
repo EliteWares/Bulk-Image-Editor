@@ -5,8 +5,12 @@ from tkinter import filedialog
 # Function to load images from a folder
 def get_bgr_from_folder(folder_path):
     images = []
-    
+    count = 0
     for filename in os.listdir(folder_path):
+        count+= 1
+        print(f"count = {count}")
+        if count > 3:
+            break
         file_path = os.path.join(folder_path, filename)
         # Check if the file is a valid image file
         if os.path.isfile(file_path) and any(filename.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png']):
@@ -22,8 +26,11 @@ def get_bgr_from_folder(folder_path):
 
 def get_rgb_from_folder(folder_path):
     images = []
-    
+    count = 0
     for filename in os.listdir(folder_path):
+        count += 1
+        if count > 3:
+            break
         file_path = os.path.join(folder_path, filename)
         # Check if the file is a valid image file
         if os.path.isfile(file_path) and any(filename.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png']):

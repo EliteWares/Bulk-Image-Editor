@@ -3,13 +3,13 @@ from tkinter import Tk, Canvas, Button, PhotoImage, filedialog, Frame
 from PIL import Image, ImageTk
 #import subprocess
 import os
-import components.window_frame_manager as wfm
-import components.frame_manager as fm
-import components.face_smoother as fs
-import components.image_resizer as ir
-import components.file_manager as fman
-import components.color_corrector as cc
-import components.popup as pup
+import src.window_frame_manager as wfm
+import src.frame_manager as fm
+import src.face_smoother as fs
+import src.image_resizer as ir
+import src.file_manager as fman
+import src.color_corrector as cc
+import src.popup as pup
 
 
 PREVIEW_HEIGHT = 900.0
@@ -24,7 +24,7 @@ class BatchImageEditor:
         self.window.title("Image Adjustment")
         self.window.geometry("1280x720")
         self.window.configure(bg = "#181818")
-        self.window.overrideredirect(True)
+        
         
         self.is_command = False
         self.color_cor = None
