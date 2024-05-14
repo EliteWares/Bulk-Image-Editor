@@ -1,9 +1,14 @@
 import tkinter as tk
-import src.face_smoother as fs
-import src.image_resizer as ir
-import src.file_manager as fman
-import src.frame_manager as fm
-import src.color_corrector as cc
+#import src.face_smoother as fs
+#import src.image_resizer as ir
+#import src.file_manager as fman
+#import src.frame_manager as fm
+#import src.color_corrector as cc
+import face_smoother as fs
+import image_resizer as ir
+import file_manager as fman
+import frame_manager as fm
+import color_corrector as cc
 
 COLOR_BG = "#181818"
 COLOR_TEXT = "#D9D9D9"
@@ -31,24 +36,20 @@ def save_bulk(w_entry, h_entry, imgs, win, commands):
                     img_to_add = fs.apply_face_smoothing(temp_img,face)
                 case "framing":
                     img_to_add = fm.overlay(img_to_add,comm[1])
-                case "color correction":
-                    for corr in comm[1]:
-                        match corr[0]:
-                            case "Temperature":
-                                print(corr[1])
-                                img_to_add = cc.adjust_temperature(corr[1],img_to_add)
-                            case "Brightness":
-                                img_to_add = cc.adjust_brightness(corr[1],img_to_add)
-                            case "Contrast":
-                                img_to_add - cc.adjust_contrast(corr[1],img_to_add)
-                            case "Highlights":
-                                img_to_add - cc.adjust_highlights(corr[1],img_to_add)
-                            case "Shadows":
-                                img_to_add - cc.adjust_shadows(corr[1],img_to_add)
-                            case "Saturation":
-                                img_to_add = cc.adjust_saturation(corr[1],img_to_add)
-                            
-                        
+                case "Temperature":
+                    img_to_add = cc.adjust_temperature(comm[1],img_to_add)
+                case "Brightness":
+                    img_to_add = cc.adjust_brightness(comm[1],img_to_add)
+                case "Contrast":
+                    img_to_add - cc.adjust_contrast(comm[1],img_to_add)
+                case "Highlights":
+                    img_to_add - cc.adjust_highlights(comm[1],img_to_add)
+                case "Shadows":
+                    img_to_add - cc.adjust_shadows(comm[1],img_to_add)
+                case "Saturation":
+                    img_to_add = cc.adjust_saturation(comm[1],img_to_add)
+                
+            
                         
                     
 

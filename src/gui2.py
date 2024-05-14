@@ -9,7 +9,7 @@ import face_smoother as fs
 import image_resizer as ir
 import file_manager as fman
 import color_corrector as cc
-#import popup as pup
+import save_popup as pup
 
 from pathlib import Path
 from PIL import Image, ImageTk
@@ -44,6 +44,7 @@ class BulkImageEditor(customtkinter.CTk):
         self.display_image = None
         self.file_path = ""
         self.command_list = []
+        self.color_corr_commands = []
         self.image_history = []
         self.images = []
         self.orig_img_shapes = []
@@ -110,6 +111,7 @@ class BulkImageEditor(customtkinter.CTk):
         self.image_history.append(self.display_image.copy())
 
         self.update_preview()
+    
     
     def adjust_image(self, val):
         corr_type = self.corr_label.cget("text")
@@ -185,11 +187,19 @@ class BulkImageEditor(customtkinter.CTk):
     
         self.update_preview()
 
+    def save(self):
+       '''pup.open_popup(self.orig_img_shapes[0][1],
+                      self.orig_img_shapes[0][0],
+                      self.images,
+                      self.command_list)'''
+       save_popup = pup.SavePopUp(self.images,self.orig_img_shapes,self.command_list)
+       save_popup.mainloop()
+        
+
     def update_preview(self):
         h,w,_ = self.display_image.shape
         ctk_img = customtkinter.CTkImage(Image.fromarray(self.display_image),size=(w,h))
         self.image_label.configure(image=ctk_img, text= "")
-        #self.mainloop()
     
     def show_color_corr_panel(self):
         self.color_cor_frame.grid(row=0, column=3, sticky="nse")
@@ -237,10 +247,15 @@ class BulkImageEditor(customtkinter.CTk):
                                                    command=self.undo)
         self.undo_btn.grid(row=4, column=0, sticky="ew")
 
+        self.save_btn = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Save",
+                                                   fg_color="transparent", text_color=("red", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=self.save)
+        self.save_btn.grid(row=5, column=0, sticky="ew")
+
         self.upload_btn = customtkinter.CTkButton(self.navigation_frame, corner_radius=5, height=40, border_spacing=10, text="Upload Folder",
                                                    fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#766BED"),
                                                    command=self.upload_folder)
-        self.upload_btn.grid(row=5, column=0, sticky="s")
+        self.upload_btn.grid(row=6, column=0, sticky="s")
         self.upload_btn.grid_configure(pady=(0,50))
 
         # create Image frame
@@ -313,6 +328,7 @@ class BulkImageEditor(customtkinter.CTk):
                                                    command=self.confirm_color_corr)
         self.confirm_btn.grid(row=8, column=0, sticky="s")
         self.confirm_btn.grid_configure(pady=20)
+        
     
 if __name__ == "__main__":
     app = BulkImageEditor()

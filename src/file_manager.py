@@ -9,7 +9,7 @@ def get_bgr_from_folder(folder_path):
     for filename in os.listdir(folder_path):
         count+= 1
         print(f"count = {count}")
-        if count > 3:
+        if count > 6:
             break
         file_path = os.path.join(folder_path, filename)
         # Check if the file is a valid image file
@@ -29,7 +29,7 @@ def get_rgb_from_folder(folder_path):
     count = 0
     for filename in os.listdir(folder_path):
         count += 1
-        if count > 3:
+        if count > 6:
             break
         file_path = os.path.join(folder_path, filename)
         # Check if the file is a valid image file

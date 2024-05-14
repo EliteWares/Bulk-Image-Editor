@@ -1,9 +1,7 @@
 import src.gui as gui
-import tkinter as tk
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = gui.BatchImageEditor(root)
+    app = gui.BulkImageEditor()
     app.start()
 
 

@@ -1,319 +1,340 @@
-from pathlib import Path
-from tkinter import Tk, Canvas, Button, PhotoImage, filedialog, Frame
-from PIL import Image, ImageTk
-#import subprocess
+import tkinter
+import tkinter.filedialog
+import tkinter.messagebox
+import customtkinter
 import os
-import src.window_frame_manager as wfm
 import src.frame_manager as fm
 import src.face_smoother as fs
 import src.image_resizer as ir
 import src.file_manager as fman
 import src.color_corrector as cc
-import src.popup as pup
+import src.save_popup as pup
 
+from pathlib import Path
+from PIL import Image, ImageTk
 
 PREVIEW_HEIGHT = 900.0
 PREVIEW_WIDTH = 300.0
+APP_WIDTH = 1000
+APP_HEIGHT = 600
 OUTPUT_PATH = Path(__file__).parent
 ASSETS_PATH = OUTPUT_PATH / Path(r"../imgs/res")
 
+customtkinter.set_appearance_mode("Dark")
 
-class BatchImageEditor:
-    def __init__(self, root:Tk):
-        self.window = root
-        self.window.title("Image Adjustment")
-        self.window.geometry("1280x720")
-        self.window.configure(bg = "#181818")
+def relative_to_assets(path: str) -> Path:
+    return ASSETS_PATH / Path(path)
+
+
+class BulkImageEditor(customtkinter.CTk):
+    def __init__(self):
+        super().__init__()
         
+        self.title("Bulk Image Editor")
+        self.geometry(f"{APP_WIDTH}x{APP_HEIGHT}")
+        self.configure(bg = "#181818")
         
-        self.is_command = False
+        # set grid layout 1x3
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(2, weight=1)
+                
+       
         self.color_cor = None
+        self.display_image = None
         self.file_path = ""
         self.command_list = []
+        self.color_corr_commands = []
         self.image_history = []
         self.images = []
-        self.orig_img_height = 0.0
-        self.orig_img_width = 0.0
+        self.orig_img_shapes = []
 
+        
     def start(self):
         self.create_widgets()
-        self.window.mainloop()
+        self.mainloop()
+          
     
-    def relative_to_assets(self,path: str) -> Path:
-        return ASSETS_PATH / Path(path)
-    
-    def upload_image(self):
-        currdir = os.getcwd()
-        
-        self.file_path = filedialog.askopenfilename(parent=self.window,
-                                                     initialdir=currdir,
-                                                     title='Please select a directory',
-                                                     filetypes=[('image files',('.png','.jpeg','.jpg'))]
-                                                     )
-        if not self.file_path:
-            return
-        image = fman.get_rgb_from_path(self.file_path)
-        
-        
-        self.orig_img_height, self.orig_img_width, _ = image.shape
-        img_copy = image.copy()
-        self.image_history = [ir.resize_to_preview(img_copy)]
-
-        self.update_preview()
-
     def upload_folder(self):
-        self.is_command = True
         currdir = os.getcwd()
         
-        self.folder_path = filedialog.askdirectory(parent=self.window,
+        folder_path = tkinter.filedialog.askdirectory(parent=self,
                                                    initialdir= currdir,
                                                    title="Select folder of images")
         
-        if not self.folder_path:
+        if not folder_path:
             return
         
-        self.images = fman.get_rgb_from_folder(self.folder_path)
-        self.orig_img_height, self.orig_img_width, _ = self.images[0].shape        
-
-        img_copy = self.images[0].copy()
-        self.image_history = [ir.resize_to_preview(img_copy)]
+        self.images = fman.get_rgb_from_folder(folder_path)
+        self.orig_img_shapes = []
+        for img in self.images:
+            self.orig_img_shapes.append(img.shape)
+            
+        self.display_image = ir.resize_to_preview(self.images[0].copy())
+        self.image_history = [self.display_image.copy()]
         
         self.update_preview()
-
-        
-
-    def update_preview(self):
-        imgtk = ImageTk.PhotoImage(image = Image.fromarray(self.image_history[-1]))
-        self.canvas.create_image(
-            933.0,
-            390.0,
-            image=imgtk
-        )
-        self.window.mainloop()
-    
     
     def remove_blemish(self):
-        if self.is_command:
-            self.command_list.append(["remove blemish"])
-
-        image, face = fs.detect_face(self.image_history[-1].copy())
-        current_img = fs.apply_face_smoothing(image,face)
-        self.image_history.append(current_img)
-
-        #subprocess.run(['python', 'components/blemish_remover.py', file_path])
-
-        self.update_preview()
-    
-
-    def get_corrected_img(self):
-        if self.is_command:
-            corrected_commands = self.color_cor.commands
-
-            corrected_commands.append([self.color_cor.label.cget("text"),self.color_cor.slider.get()])
-
-            if len(corrected_commands) > 0:
-                self.command_list.append(["color correction",corrected_commands])
-
-
-        self.image_history.append(self.color_cor.image)
-        self.color_cor.master.destroy()
-        self.update_preview()
-     
-    def color_correction(self):
-        self.color_cor = cc.open_popup(self.image_history[-1].copy(),self.is_command)
-        self.btn = self.color_cor.confirm_btn
-        self.btn.configure(command=self.get_corrected_img)
+        self.command_list.append(["remove blemish"])
         
+        image, face = fs.detect_face(self.image_history[-1].copy())
+        self.display_image = fs.apply_face_smoothing(image,face)
+        
+        self.image_history.append(self.display_image.copy())
+
+        self.update_preview()
     
+
+    def confirm_color_corr(self):
+        if self.corr_label.cget("text") == "Saturation" and self.slider.get() != 1:
+            self.image_history.append(self.display_image.copy())
+            self.color_corr_commands.append([self.corr_label.cget("text"),self.slider.get()])
+        elif self.corr_label.cget("text") != "Saturation" and self.slider.get() != 0:
+            self.image_history.append(self.display_image.copy())
+            self.color_corr_commands.append([self.corr_label.cget("text"),self.slider.get()])
+
+        if len(self.color_corr_commands) > 0:
+            for comm in self.color_corr_commands:
+                self.command_list.append(comm)
+        print(f"Command List = {self.command_list}")
+        
+        self.hide_color_corr_panel()
+
     def framing(self):
+        if len(self.image_history) == 0: return
+
+        overlay_path = ""
+        
         currdir = os.getcwd()
-        overlay_path = filedialog.askopenfilename(parent=self.window, initialdir=currdir, title='Select Frame Image',)
+        overlay_path = tkinter.filedialog.askopenfilename(parent=self, initialdir=currdir, title='Select Frame Image',)
         
         if not overlay_path:
             return
+        
+        self.command_list.append(["framing",overlay_path])
+        
 
-        if self.is_command:
-            self.command_list.append(["framing",overlay_path])
-
-        current_img = fm.overlay(self.image_history[-1],overlay_path)
-        self.image_history.append(current_img)
+        self.display_image = fm.overlay(self.display_image,overlay_path)
+        self.image_history.append(self.display_image.copy())
 
         self.update_preview()
     
+    
+    def adjust_image(self, val):
+        corr_type = self.corr_label.cget("text")
+
+        match corr_type:
+            case "Temperature":
+                self.display_image = cc.adjust_temperature(val,self.image_history[-1])                
+            case "Brightness":
+                self.display_image = cc.adjust_brightness(val,self.image_history[-1])                
+            case "Contrast":
+                self.display_image = cc.adjust_contrast(val,self.image_history[-1])                
+            case "Highlights":
+                self.display_image = cc.adjust_highlights(val,self.image_history[-1])                
+            case "Shadows":
+                self.display_image = cc.adjust_shadows(val,self.image_history[-1])                
+            case "Saturation":
+                self.display_image = cc.adjust_saturation(val,self.image_history[-1])   
+
+        self.update_preview()
+
+    def change_mode(self,mode):
+        if self.corr_label.cget("text") == "Saturation" and self.slider.get() != 1:
+            self.image_history.append(self.display_image.copy())
+            self.color_corr_commands.append([self.corr_label.cget("text"),self.slider.get()])
+            self.slider.set(1)
+        elif self.corr_label.cget("text") != "Saturation" and self.slider.get() != 0:
+            self.image_history.append(self.display_image.copy())
+            self.color_corr_commands.append([self.corr_label.cget("text"),self.slider.get()])
+            self.slider.set(0)
+        
+        print(f"Color Correction command List = {self.color_corr_commands}")
+        
+        match mode:
+            case "temperature":
+                self.corr_label.configure(text="Temperature")
+                self.slider.configure(from_=-25, to=25)
+            case "brightness":
+                self.corr_label.configure(text="Brightness")
+                self.slider.configure(from_=-100, to=100)
+            case "contrast":
+                self.corr_label.configure(text="Contrast")
+                self.slider.configure(from_=-100, to=100)
+            case "saturation":
+                self.corr_label.configure(text="Saturation")
+                self.slider.configure(from_=0, to=2)
+            case "highlights":
+                self.corr_label.configure(text="Highlights")
+                self.slider.configure(from_=-100, to=100)
+            case "shadows":
+                self.corr_label.configure(text="Shadows")
+                self.slider.configure(from_=-100, to=100)
+        
+
+                
     def undo(self):
+        if self.corr_label._text == "Saturation":
+            if self.slider.get() != 1:
+                self.slider.set(1)
+        else:
+            if self.slider.get() != 0:
+                self.slider.set(0)
+        
+        self.adjust_image(self.slider.get())
+           
+        if len(self.color_corr_commands) > 0:
+            self.color_corr_commands.pop()
+            self.image_history.pop()
+            return
+
         if len(self.image_history) > 1:
             self.image_history.pop()
+            self.display_image = self.image_history[-1].copy()
         
-            if self.is_command:
-                self.command_list.pop()
+            if len(self.command_list) > 0: self.command_list.pop()
     
         self.update_preview()
-    
+
     def save(self):
-        if self.is_command:
-            pup.open_popup(self.orig_img_width,
-                       self.orig_img_height,
-                       self.images,
-                       self.command_list)
-        else:
-            pup.open_popup(self.orig_img_width,
-                       self.orig_img_height,
-                       self.image_history[-1],
-                       self.command_list)
+       '''pup.open_popup(self.orig_img_shapes[0][1],
+                      self.orig_img_shapes[0][0],
+                      self.images,
+                      self.command_list)'''
+       save_popup = pup.SavePopUp(self.images,self.orig_img_shapes,self.command_list)
+       save_popup.mainloop()
+        
 
+    def update_preview(self):
+        h,w,_ = self.display_image.shape
+        ctk_img = customtkinter.CTkImage(Image.fromarray(self.display_image),size=(w,h))
+        self.image_label.configure(image=ctk_img, text= "")
+    
+    def show_color_corr_panel(self):
+        self.color_cor_frame.grid(row=0, column=3, sticky="nse")
+        self.color_cor_btn.configure(command=self.hide_color_corr_panel)
 
-    def configure_button(self,button, reg_btn, hov_btn, dim, pos):
-        img_hov = PhotoImage(file=self.relative_to_assets(hov_btn))
-        img_reg = PhotoImage(file=self.relative_to_assets(reg_btn))
-            
-        button.bind("<Enter>", func=lambda e: button.config(image=img_hov))
-        button.bind("<Leave>", func=lambda e: button.config(image=img_reg))
+        self.display_image = self.image_history[-1].copy()
+        self.image_history.append(self.display_image.copy())
+        self.color_corr_commands = []
+    
+    def hide_color_corr_panel(self):
+        self.color_cor_frame.grid_forget()
+        self.color_cor_btn.configure(command=self.show_color_corr_panel)
 
-        button.place(
-            x=pos[0],
-            y=pos[1],
-            width=dim[0],
-            height=dim[1]
-        )    
+        
 
     def create_widgets(self):
-        wfm.DraggableWindow(self.window)
+        # create navigation frame
+        self.navigation_frame = customtkinter.CTkFrame(self, corner_radius=0)
+        self.navigation_frame.grid_rowconfigure(4, weight=1)
+        self.navigation_frame.grid(row=0, column=0, sticky="nsw")
+
+        self.navigation_frame_label = customtkinter.CTkLabel(self.navigation_frame, text="Bulk Image Editor",
+                                                             font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.navigation_frame_label.grid(row=0, column=0, padx=20, pady=20)
+    
+        # Create Navigation Buttons
+        self.blemish_btn = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Remove Blemishes",
+                                                   fg_color="transparent", text_color=("red", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=self.remove_blemish)
+        self.blemish_btn.grid(row=1, column=0, sticky="ew")
+
+        self.color_cor_btn = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Color Correction",
+                                                   fg_color="transparent", text_color=("red", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=self.show_color_corr_panel)
+        self.color_cor_btn.grid(row=2, column=0, sticky="ew")
+
+        self.frame_mngr_btn = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Frame Manager",
+                                                   fg_color="transparent", text_color=("red", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=self.framing)
+        self.frame_mngr_btn.grid(row=3, column=0, sticky="ew")
+
+        self.undo_btn = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Undo",
+                                                   fg_color="transparent", text_color=("red", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=self.undo)
+        self.undo_btn.grid(row=4, column=0, sticky="ew")
+
+        self.save_btn = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Save",
+                                                   fg_color="transparent", text_color=("red", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=self.save)
+        self.save_btn.grid(row=5, column=0, sticky="ew")
+
+        self.upload_btn = customtkinter.CTkButton(self.navigation_frame, corner_radius=5, height=40, border_spacing=10, text="Upload Folder",
+                                                   fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#766BED"),
+                                                   command=self.upload_folder)
+        self.upload_btn.grid(row=6, column=0, sticky="s")
+        self.upload_btn.grid_configure(pady=(0,50))
+
+        # create Image frame
+        self.img_frame = customtkinter.CTkFrame(self, corner_radius=0)
+        self.img_frame.grid_rowconfigure(0, weight=1)
+        self.img_frame.grid(row=0, column=2)
         
-        self.canvas = Canvas(
-            self.window,
-            bg = "#181818",
-            height = 720,
-            width = 1280,
-            bd = 0,
-            highlightthickness = 0,
-            relief = "ridge"
-        )
-        self.canvas.create_text(
-            443.0,
-            32.0,
-            anchor="nw",
-            text="Bulk Image Editor",
-            fill="#A364FF",
-            font=("Inter", 36 * -1)
-        )
-        self.canvas.place(x = 0, y = 0)
-        self.canvas.pack()
+        
+        # Add Preview image to image frame
+        
+        #ctk_img = customtkinter.CTkImage(Image.fromarray(self.image_history[-1]),size=(self.w,self.h))
 
-        self.button_image_1 = PhotoImage(file=self.relative_to_assets("button_1.png"))
-        button_1 = Button(
-            image=self.button_image_1,
-            borderwidth=0,
-            highlightthickness=0,
-            command=self.undo,
-            relief="flat",
-            name="undo"
-        )
-        self.configure_button(button = button_1,
-                        reg_btn = "button_1.png",
-                        hov_btn = "button_1_hover.png",
-                        dim = (81.0,81.0),
-                        pos = (555.0,351.0))
+        self.image_label = customtkinter.CTkLabel(self.img_frame,text="Upload a folder to show preview")
+        self.image_label.grid(row=0, column=0, padx=20, pady=10, sticky="ew")
+        
+        # Add color correction frame
+        self.color_cor_frame = customtkinter.CTkFrame(self, corner_radius=0)
+        
+        self.color_cor_frame.grid_rowconfigure(8, weight=1)
+        
 
+        self.corr_label = customtkinter.CTkLabel(self.color_cor_frame,text="Temperature",font=("Times New Roman",20,"bold"))
+        self.corr_label.grid(row=0, column=0, padx=20, pady=20)
 
-        self.button_image_2 = PhotoImage(
-            file=self.relative_to_assets("button_2.png"))
-        button_2 = Button(
-            image=self.button_image_2,
-            borderwidth=0,
-            highlightthickness=0,
-            command=self.save,
-            relief="flat",
-            background="#181818",
-            name="save"
-        )
-        self.configure_button(button = button_2,
-                        reg_btn = "button_2.png",
-                        hov_btn = "button_2_hover.png",
-                        dim = (201.0,69.0),
-                        pos = (238.0,613.0))
+        # Add slider to color corr frame
+        self.slider = customtkinter.CTkSlider(self.color_cor_frame,
+                                             from_=-25,
+                                             to=25,
+                                             progress_color="#766BED",
+                                             fg_color="#766BED",
+                                             button_color="#A364FF",
+                                             command=self.adjust_image)
+        self.slider.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.slider.grid_configure(pady=50)
+        self.slider.set(0)
+        # Add buttons for color correction to frame
+        
+        self.temp_btn = customtkinter.CTkButton(self.color_cor_frame, corner_radius=0, height=40, border_spacing=10, text="Temperature",
+                                                   fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=lambda: self.change_mode("temperature"))
+        self.temp_btn.grid(row=2, column=0, sticky="ew")
 
-        self.button_image_3 = PhotoImage(
-            file=self.relative_to_assets("button_3.png"))
-        button_3 = Button(
-            image=self.button_image_3,
-            borderwidth=0,
-            highlightthickness=0,
-            command=self.framing,
-            relief="flat",
-            background="#181818",
-            name="framing"
-        )
-        self.configure_button(button = button_3,
-                        reg_btn = "button_3.png",
-                        hov_btn = "button_3_hover.png",
-                        dim = (268.0,78.0),
-                        pos = (207.0,460.0))
+        self.bright_btn = customtkinter.CTkButton(self.color_cor_frame, corner_radius=0, height=40, border_spacing=10, text="Brightness",
+                                                   fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=lambda: self.change_mode("brightness"))
+        self.bright_btn.grid(row=3, column=0, sticky="ew")
+        
+        self.contr_btn = customtkinter.CTkButton(self.color_cor_frame, corner_radius=0, height=40, border_spacing=10, text="Contrast",
+                                                   fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=lambda: self.change_mode("contrast"))
+        self.contr_btn.grid(row=4, column=0, sticky="ew")
 
-        self.button_image_4 = PhotoImage(
-            file=self.relative_to_assets("button_4.png"))
-        button_4 = Button(
-            image=self.button_image_4,
-            borderwidth=0,
-            highlightthickness=0,
-            command= self.color_correction,
-            relief="flat",
-            background="#181818",
-            name="color_corr"
-        )
-        self.configure_button(button = button_4,
-                        reg_btn = "button_4.png",
-                        hov_btn = "button_4_hover.png",
-                        dim = (268.0,78.0),
-                        pos = (207.0,351.0))
+        self.high_btn = customtkinter.CTkButton(self.color_cor_frame, corner_radius=0, height=40, border_spacing=10, text="Highlights",
+                                                   fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=lambda: self.change_mode("highlights"))
+        self.high_btn.grid(row=5, column=0, sticky="ew")
+        
+        self.shad_btn = customtkinter.CTkButton(self.color_cor_frame, corner_radius=0, height=40, border_spacing=10, text="Shadows",
+                                                   fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=lambda: self.change_mode("shadows"))
+        self.shad_btn.grid(row=6, column=0, sticky="ew")
+        
+        self.satur_btn = customtkinter.CTkButton(self.color_cor_frame, corner_radius=0, height=40, border_spacing=10, text="Saturation",
+                                                   fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#A364FF"),
+                                                   command=lambda: self.change_mode("saturation"))
+        self.satur_btn.grid(row=7, column=0, sticky="ew")
 
-        self.button_image_5 = PhotoImage(
-            file=self.relative_to_assets("button_5.png"))
-        button_5 = Button(
-            image=self.button_image_5,
-            borderwidth= 0,
-            highlightthickness= 0,
-            command= self.remove_blemish,
-            relief= "flat",
-            background= "#181818",
-            name= "blemish"
-        )
-        self.configure_button(button = button_5,
-                        reg_btn = "button_5.png",
-                        hov_btn = "button_5_hover.png",
-                        dim = (268.0,82.0),
-                        pos = (207.0,242.0))
-
-        self.button_image_6 = PhotoImage(
-            file=self.relative_to_assets("button_6.png"))
-        button_6 = Button(
-            image=self.button_image_6,
-            borderwidth=0,
-            highlightthickness=0,
-            command=self.upload_folder,
-            relief="flat",
-            background="#181818",
-            name="upload_folder",
-            
-        )
-        self.configure_button(button = button_6,
-                        reg_btn = "button_6.png",
-                        hov_btn = "button_6_hover.png",
-                        dim = (189.0,78.0),
-                        pos = (352.0,137.0))
-
-        self.button_image_7 = PhotoImage(
-            file=self.relative_to_assets("button_7.png"))
-        button_7 = Button(
-            image=self.button_image_7,
-            borderwidth=0,
-            highlightthickness=0,
-            command=self.upload_image,
-            relief="flat",
-            background="#181818",
-            name="upload_image"
-        )
-        self.configure_button(button = button_7,
-                        reg_btn = "button_7.png",
-                        hov_btn = "button_7_hover.png",
-                        dim = (189.0,78.0),
-                        pos = (135.0,137.0))
+        self.confirm_btn = customtkinter.CTkButton(self.color_cor_frame, corner_radius=5, height=40, border_spacing=10, text="Confirm",
+                                                   fg_color="transparent", text_color=("gray70", "gray90"), hover_color=("gray70", "#766BED"),
+                                                   command=self.confirm_color_corr)
+        self.confirm_btn.grid(row=8, column=0, sticky="s")
+        self.confirm_btn.grid_configure(pady=20)
+        
+   

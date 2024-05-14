@@ -6,7 +6,7 @@ from PIL import Image
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 
-customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
+# Themes: "blue" (standard), "green", "dark-blue"
 
 class ImgApp(customtkinter.CTk):
     def __init__(self):
@@ -270,5 +270,5 @@ class App(customtkinter.CTk):
 
 
 if __name__ == "__main__":
-    app = ImgApp()
+    app = App()
     app.mainloop()
