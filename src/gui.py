@@ -151,25 +151,27 @@ class BulkImageEditor(customtkinter.CTk):
         
         print(f"Color Correction command List = {self.color_corr_commands}")
         
+        limit = 15
+        
         match mode:
             case "temperature":
                 self.corr_label.configure(text="Temperature")
-                self.slider.configure(from_=-25, to=25)
+                self.slider.configure(from_=-limit, to=limit)
             case "brightness":
                 self.corr_label.configure(text="Brightness")
-                self.slider.configure(from_=-100, to=100)
+                self.slider.configure(from_=-limit, to=limit)
             case "contrast":
                 self.corr_label.configure(text="Contrast")
-                self.slider.configure(from_=-100, to=100)
+                self.slider.configure(from_=-limit, to=limit)
             case "saturation":
                 self.corr_label.configure(text="Saturation")
                 self.slider.configure(from_=0, to=2)
             case "highlights":
                 self.corr_label.configure(text="Highlights")
-                self.slider.configure(from_=-100, to=100)
+                self.slider.configure(from_=-limit, to=limit)
             case "shadows":
                 self.corr_label.configure(text="Shadows")
-                self.slider.configure(from_=-100, to=100)
+                self.slider.configure(from_=-limit, to=limit)
         
 
                 
@@ -197,10 +199,7 @@ class BulkImageEditor(customtkinter.CTk):
         self.update_preview()
 
     def save(self):
-       '''pup.open_popup(self.orig_img_shapes[0][1],
-                      self.orig_img_shapes[0][0],
-                      self.images,
-                      self.command_list)'''
+       
        save_popup = pup.SavePopUp(self.images,self.orig_img_shapes,self.command_list)
        save_popup.mainloop()
         
@@ -221,6 +220,7 @@ class BulkImageEditor(customtkinter.CTk):
     def hide_color_corr_panel(self):
         self.color_cor_frame.grid_forget()
         self.color_cor_btn.configure(command=self.show_color_corr_panel)
+        self.color_corr_commands = []
 
         
 
@@ -274,8 +274,6 @@ class BulkImageEditor(customtkinter.CTk):
         
         # Add Preview image to image frame
         
-        #ctk_img = customtkinter.CTkImage(Image.fromarray(self.image_history[-1]),size=(self.w,self.h))
-
         self.image_label = customtkinter.CTkLabel(self.img_frame,text="Upload a folder to show preview")
         self.image_label.grid(row=0, column=0, padx=20, pady=10, sticky="ew")
         
@@ -290,8 +288,8 @@ class BulkImageEditor(customtkinter.CTk):
 
         # Add slider to color corr frame
         self.slider = customtkinter.CTkSlider(self.color_cor_frame,
-                                             from_=-25,
-                                             to=25,
+                                             from_=-15,
+                                             to=15,
                                              progress_color="#766BED",
                                              fg_color="#766BED",
                                              button_color="#A364FF",
