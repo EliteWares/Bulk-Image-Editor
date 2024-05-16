@@ -2,7 +2,7 @@ import tkinter
 import tkinter.messagebox
 import customtkinter
 import cv2 as cv
-import time
+
 
 import src.face_smoother as fs
 import src.image_resizer as ir
@@ -125,4 +125,3 @@ class SavePopUp(customtkinter.CTk):
         print("update")
         self.progress += self.progress_incr
         self.progressbar.set(self.progress)
-        time.sleep(1.0)
