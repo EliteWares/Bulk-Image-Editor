@@ -1,11 +1,11 @@
-* Reset CSS */
-* {
+/* Reset CSS */
+/* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Global Styles */
+/* Global Styles *
 .container {
     background-color: #e99090;
 }
@@ -85,4 +85,95 @@ nav ul li a {
 
 #features ul li i {
     margin-right: 10px;
-}
+}*/
+
+        /* General styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #0073e6;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 36px;
+        }
+        header nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+        header nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+        header nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        main {
+            padding: 50px 0;
+            text-align: center;
+        }
+        #hero {
+            background-color: #f7f7f7;
+            padding: 50px 0;
+            text-align: center;
+        }
+        #hero h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        #hero p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .btn {
+            background-color: #0073e6;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #0059b3;
+        }
+        #features {
+            background-color: #fff;
+            padding: 50px 0;
+            text-align: center;
+        }
+        #features h2 {
+            font-size: 30px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        #features ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        #features ul li {
+            margin: 0 20px;
+            font-size: 20px;
+            color: #333;
+        }
+        footer {
+            background-color: #0073e6;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+    
