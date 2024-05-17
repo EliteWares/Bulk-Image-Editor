@@ -39,20 +39,22 @@ def adjust_brightness(brightness,img):
     return cv2.cvtColor(hsv_image, cv2.COLOR_HSV2RGB)
 
 def adjust_contrast(contrast, img):
-    if contrast == 0: return img
-    # Convert contrast value to a scaling factor
-    contrast_factor = (100 + contrast) / 100.0
-
-    # Convert image to grayscale if it's not already
-    if len(img.shape) == 3:
-        gray_image = cv2.cvtColor(img.copy(), cv2.COLOR_RGB2GRAY)
-    else:
-        gray_image = img
-
-    # Adjust contrast
-    adjusted_image = cv2.convertScaleAbs(gray_image, alpha=contrast_factor, beta=0)
-
-    return cv2.cvtColor(adjusted_image, cv2.COLOR_GRAY2RGB)
+    img = img.astype(np.float32)
+    
+    # Calculate the mean of the image for per-channel adjustment
+    mean = np.mean(img, axis=(0, 1), keepdims=True)
+    
+    # Adjust the contrast
+    adjusted_img = contrast * (img - mean) + mean
+    
+    # Clip the values to stay within [0, 255]
+    adjusted_img = np.clip(adjusted_img, 0, 255)
+    
+    # Convert back to uint8
+    adjusted_img = adjusted_img.astype(np.uint8)
+    
+    return adjusted_img
+    
 
 
 def adjust_highlights(highlight, img):
